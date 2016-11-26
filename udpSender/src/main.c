@@ -5,6 +5,7 @@
 
 #include "shared_definitions.h"
 #include "log.h"
+#include "com.h"
 
 void usage(){
 	printf("./run-d -i <ip> -p <port> -m <msg>\n");
@@ -16,7 +17,7 @@ void usage(){
 int main(int argc, char *argv[] ){
 	int opt;
 	char *ipstr = NULL;
-	int port;
+	int port = -1;
 	int config = 0;
 	char *msg = NULL;
 	while ( (opt = getopt(argc, argv, "i:p:m:hH") ) != -1 ){
@@ -64,7 +65,32 @@ int main(int argc, char *argv[] ){
 		}
 
 	}
-
-
+	int socket;
+	if ( (socket = makeConnection(ipstr, port) ) == -1 ){
+		FATAL("Can not open udp socket for sending")
+		return -1;
+	}
+	if ( msg == NULL){
+		if ( ( msg = malloc(1024)) == NULL ){
+			FATAL("Memory failure");
+			return -1;
+		}
+		while (1){
+			printf("MSG ? (type \"quit\" for exit):");
+			scanf("%s", msg);
+			if ( !strcmp(msg, "quit") ){
+				free(msg);
+				LOG("quit received.. exit!")
+				break;
+			}
+			printf("sending :%s\n", msg);
+		}
+	}else{
+		printf("Sending :%s\n", msg);
+		if ( sendUdp(socket, msg, strlen(msg)) == -1){
+			FATAL("Cannot sent message\n")
+			return -1;
+		}
+	}
 	return 0;
 }
