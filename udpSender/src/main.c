@@ -89,8 +89,10 @@ int main(int argc, char *argv[] ){
 		printf("Sending :%s\n", msg);
 		if ( sendUdp(socket, msg, strlen(msg)) == -1){
 			FATAL("Cannot sent message\n")
+			close(socket);
 			return -1;
 		}
 	}
+	close(socket);
 	return 0;
 }
