@@ -75,15 +75,33 @@ int main(int argc, char *argv[] ){
 			FATAL("Memory failure");
 			return -1;
 		}
+		const char s[2] = " ";
+		char *token;
+		int i, buflen;
+		char buffer[1024];
 		while (1){
 			printf("MSG ? (type \"quit\" for exit):");
-			scanf("%s", msg);
+			i = 0;
+			while ( ( msg[i++] = getc(stdin) ) != '\n' );
+			msg[--i] = '\0';
 			if ( !strcmp(msg, "quit") ){
 				free(msg);
 				LOG("quit received.. exit!")
 				break;
 			}
-			printf("sending :%s\n", msg);
+			i = 0, buflen = 0;
+			token = strtok(msg, s);
+			while( token != NULL )
+			{
+				buffer[i++] = strtol(token, NULL, 16);
+				token = strtok(NULL, s);
+			}
+			buflen = i;
+			if ( sendUdp(socket, buffer, buflen) == -1){
+				FATAL("Cannot sent message\n")
+				close(socket);
+				return -1;
+			}
 		}
 	}else{
 		printf("Sending :%s\n", msg);
